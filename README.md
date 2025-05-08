@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -68,3 +69,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+=======
+# MilkMate
+MilkMate is a lightweight web application built for local milk vendors to simplify daily milk delivery tracking and customer payment management. Designed with React for the frontend and PHP + MySQL for the backend, MilkMate replaces paper records with a clean, digital interface.
+>>>>>>> aaad843afdd54528293d53230e21db1ae793b05d
