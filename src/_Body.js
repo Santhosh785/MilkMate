@@ -33,7 +33,17 @@ const _Body = ({ dayName, dateString, quantity, setQuantity }) => {
         const morningQty = quantity[item.name]?.morning || 0; // default to 0 if undefined
         const eveningQty = quantity[item.name]?.evening || 0; // default to 0 if undefined
         return ((morningQty + eveningQty) * item.price).toFixed(2); // round to 2 decimal places
+
     };
+
+    const calculateTotal = () => {
+        return data.reduce((sum, item) => {
+            const morningQty = quantity[item.name]?.morning || 0;
+            const eveningQty = quantity[item.name]?.evening || 0;
+            return sum + (morningQty + eveningQty) * item.price;
+        }, 0);
+    };
+
 
     // JSX returned by the component
     return (
@@ -42,7 +52,7 @@ const _Body = ({ dayName, dateString, quantity, setQuantity }) => {
             <div className="header">
                 <h1>{dayName}</h1>
                 <h2>{dateString}</h2>
-                <div className="total">Total: ₹10,104.78</div> {/* You can calculate this dynamically later */}
+                <div className="total">Total:{calculateTotal()}</div> {/* You can calculate this dynamically later */}
             </div>
 
             {/* Displaying milk delivery limits (optional info for UI) */}
