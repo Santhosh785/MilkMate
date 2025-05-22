@@ -92,3 +92,14 @@ th {
 input[type="number"] {
   width: 50px;
 }
+
+button {
+  height: 48px;
+  min-width: 48px;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  font-size: 1rem;
+  background-color: red;
+  /* color: mediumblue; */
+  cursor: pointer;
+}
