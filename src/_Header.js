@@ -1,9 +1,19 @@
-import React from 'react'
+import React from 'react';
+import AavinLogo from './Images/AavinLogo.png';
+import './Header.css';
+
 
 const _Header = () => {
     return (
-        <div></div>
-    )
-}
+        <header className=''>
+            <img src={AavinLogo} alt="MilkMate Logo" style={{ width: 100 }} />
 
-export default _Header
+            <button type="button" className="btn btn-outline-primary">Primary</button>
+
+
+
+        </header>
+    );
+};
+
+export default _Header;

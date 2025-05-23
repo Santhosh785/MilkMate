@@ -49,7 +49,7 @@ const _Body = ({ dayName, dateString, quantity, setQuantity }) => {
     return (
         <main>
             {/* Header section displaying the day, date, and a hardcoded total */}
-            <div className="header">
+            <div className="info-bar">
                 <h1>{dayName}</h1>
                 <h2>{dateString}</h2>
                 <div className="total">Total:{calculateTotal()}</div> {/* You can calculate this dynamically later */}
@@ -98,7 +98,7 @@ const _Body = ({ dayName, dateString, quantity, setQuantity }) => {
             </table>
 
             {/* Submit button with plus icon (used for adding entry or moving to next step) */}
-            <button type="submit" aria-label="Add Item">
+            <button className="sumbit" type="submit" aria-label="Add Item">
                 <FaPlus />
             </button>
         </main>

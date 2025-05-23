@@ -1,0 +1,13 @@
+/* In your CSS file or inside a <style> block */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: white;
+    /* or your preferred background */
+    border-bottom: 5px solid #000;
+    /* Thick bottom border */
+    z-index: 1000;
+    /* So it stays on top of other content */
+    padding: 10px 20px;
+}
