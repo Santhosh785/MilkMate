@@ -8,7 +8,10 @@ const _Header = () => {
         <header className=''>
             <img src={AavinLogo} alt="MilkMate Logo" style={{ width: 100 }} />
 
-            <button type="button" className="btn btn-outline-primary">Primary</button>
+            <div class="button-container">
+                <button class="button">Hi...</button>
+                <button class="button">Logout</button>
+            </div>
 
 
 
