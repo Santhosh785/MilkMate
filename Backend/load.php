@@ -1,7 +1,10 @@
 <?php
 
+include_once 'includes/Session.class.php';
 include_once 'includes/user.class.php';
 include_once 'includes/DataBase.class.php';
+
+Session::Start();
 
 global $__site_config;
 $__site_config = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/../milkmateconfig.json');
