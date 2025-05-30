@@ -24,4 +24,22 @@ class user
         $conn->close();
         return $error;
     }
+    public static function validate_credentials($user, $pass)
+    {
+
+        $query = "SELECT * FROM `auth` WHERE `username` = '$user'";
+        $conn = DataBase::getConnection();
+        $result = $conn->query($query);
+        if ($result->num_rows == 1) {
+            $row = $result->fetch_assoc();
+            // if ($row['password'] == $pass) {
+            if (password_verify($pass, $row['password'])) {
+                return $row;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
 }
