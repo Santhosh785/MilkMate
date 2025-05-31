@@ -1,7 +1,7 @@
 <?php
 
 include_once 'includes/Session.class.php';
-include_once 'includes/user.class.php';
+include_once 'includes/User.class.php';
 include_once 'includes/DataBase.class.php';
 
 Session::Start();

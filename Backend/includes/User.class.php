@@ -1,6 +1,6 @@
 <?php
 
-class user
+class User
 {
 
     public static function signup($user, $pass, $email, $phone)
