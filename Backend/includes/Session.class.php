@@ -32,8 +32,12 @@ class Session
         return isset($_SESSION[$key]);
     }
 
-    public static function get($key)
+    public static function get($key, $default = false)
     {
-        return $_SESSION($key);
+        if (Session::isset($key)) {
+            return $_SESSION[$key];
+        } else {
+            return $default;
+        }
     }
 }

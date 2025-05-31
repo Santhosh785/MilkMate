@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['email_address'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    $result = user::validate_credentials($username, $password);
+    $result = User::validate_credentials($username, $password);
 }
 ?>
 
