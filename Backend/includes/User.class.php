@@ -2,6 +2,16 @@
 
 class User
 {
+    public function __call($name, $arguments)
+    {
+        $property = preg_replace("/[^0-9a-zA-Z]/", "", substr($name, 3));
+        $property = strtolower(preg_replace('/\B([A-Z])/', '_$1', $property));
+        if (substr($name, 0, 3) == "get") {
+            return $this->_get_data($property);
+        } elseif (substr($name, 0, 3) == "set") {
+            return $this->_set_data($property, $arguments[0]);
+        }
+    }
 
     public static function signup($user, $pass, $email, $phone)
     {
@@ -42,4 +52,48 @@ class User
             return false;
         }
     }
+    public function __construct($username)
+    {
+        //TODO: Write the code to fetch user data from Database for the given username. If username is not present, throw Exception.
+        $this->conn = DataBase::getConnection();
+        $this->username = $username;
+        $this->id = null;
+        $sql = "SELECT `id` FROM `auth` WHERE `username`= '$username' LIMIT 1";
+        $result = $this->conn->query($sql);
+        if ($result->num_rows) {
+            $row = $result->fetch_assoc();
+            $this->id = $row['id']; //Updating this from database
+        } else {
+            throw new Exception("Username does't exist");
+        }
+    }
+    private function _get_data($var)
+    {
+        if (!$this->conn) {
+            $this->conn = DataBase::getConnection();
+        }
+        $sql = "SELECT `$var` FROM `users` WHERE `id` = $this->id";
+        //print($sql);
+        $result = $this->conn->query($sql);
+        if ($result and $result->num_rows == 1) {
+            //print("Res: ".$result->fetch_assoc()["$var"]);
+            return $result->fetch_assoc()["$var"];
+        } else {
+            return null;
+        }
+    }
+    private function _set_data($var, $data)
+    {
+        if (!$this->conn) {
+            $this->conn = DataBase::getConnection();
+        }
+        $sql = "UPDATE `users` SET `$var`='$data' WHERE `id`=$this->id;";
+        if ($this->conn->query($sql)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function authenticate() {}
 }
