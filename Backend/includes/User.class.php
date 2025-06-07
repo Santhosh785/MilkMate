@@ -2,7 +2,7 @@
 
 class User
 {
-    public function __call($name, $arguments)
+    public function __call($name, $arguments) //magic function
     {
         $property = preg_replace("/[^0-9a-zA-Z]/", "", substr($name, 3));
         $property = strtolower(preg_replace('/\B([A-Z])/', '_$1', $property));
@@ -44,7 +44,7 @@ class User
             $row = $result->fetch_assoc();
             // if ($row['password'] == $pass) {
             if (password_verify($pass, $row['password'])) {
-                return $row;
+                return $row['username'];
             } else {
                 return false;
             }
@@ -64,7 +64,7 @@ class User
             $row = $result->fetch_assoc();
             $this->id = $row['id']; //Updating this from database
         } else {
-            throw new Exception("Username does't exist");
+            echo ("Username does't exist");
         }
     }
     private function _get_data($var)
@@ -73,7 +73,7 @@ class User
             $this->conn = DataBase::getConnection();
         }
         $sql = "SELECT `$var` FROM `users` WHERE `id` = $this->id";
-        //print($sql);
+        print($sql);
         $result = $this->conn->query($sql);
         if ($result and $result->num_rows == 1) {
             //print("Res: ".$result->fetch_assoc()["$var"]);
@@ -88,6 +88,7 @@ class User
             $this->conn = DataBase::getConnection();
         }
         $sql = "UPDATE `users` SET `$var`='$data' WHERE `id`=$this->id;";
+        echo ($sql);
         if ($this->conn->query($sql)) {
             return true;
         } else {
