@@ -73,7 +73,6 @@ class User
             $this->conn = DataBase::getConnection();
         }
         $sql = "SELECT `$var` FROM `users` WHERE `id` = $this->id";
-        print($sql);
         $result = $this->conn->query($sql);
         if ($result and $result->num_rows == 1) {
             //print("Res: ".$result->fetch_assoc()["$var"]);
@@ -88,12 +87,15 @@ class User
             $this->conn = DataBase::getConnection();
         }
         $sql = "UPDATE `users` SET `$var`='$data' WHERE `id`=$this->id;";
-        echo ($sql);
         if ($this->conn->query($sql)) {
             return true;
         } else {
             return false;
         }
+    }
+    public function getUsername()
+    {
+        return $this->username;
     }
 
     public function authenticate() {}
