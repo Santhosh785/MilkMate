@@ -4,11 +4,13 @@ include_once 'includes/Session.class.php';
 include_once 'includes/User.class.php';
 include_once 'includes/DataBase.class.php';
 include_once 'includes/UserSession.class.php';
+include_once 'includes/WebAPI.class.php';
 
 Session::Start();
+$wapi = new WebAPI();
+$wapi->initiateSession();
 
-global $__site_config;
-$__site_config = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/../milkmateconfig.json');
+
 
 
 function get_config($key, $default = null)
